@@ -7,7 +7,7 @@ const app: Application = express();
 app.use(bodyParser.json());
 app.use(reviewController);
 
-const productIdMock = "123";
+const productIdMock = 123;
 
 describe("ReviewController", () => {
   describe("GET /api/products/:productId/reviews", () => {

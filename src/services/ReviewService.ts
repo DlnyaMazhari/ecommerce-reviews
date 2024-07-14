@@ -8,7 +8,7 @@ export class ReviewService {
     this.reviewRepository = new ReviewRepository();
   }
 
-  async getReviewsByProductId(productId: string | number): Promise<Review[]> {
+  async getReviewsByProductId(productId: number): Promise<Review[]> {
     return await this.reviewRepository.getReviewsByProductId(productId);
   }
 

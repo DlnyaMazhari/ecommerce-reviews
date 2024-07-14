@@ -17,7 +17,7 @@ describe("ReviewService", () => {
 
   it("should add a new review", async () => {
     const mockReview: Review = {
-      product_id: "123",
+      product_id: 123,
       content: "Great product!",
       rating: 5,
     };
@@ -31,7 +31,7 @@ describe("ReviewService", () => {
   });
 
   it("should get reviews by product ID", async () => {
-    const mockProductId = "123";
+    const mockProductId = 123;
     const mockReviews: Review[] = [
       {
         product_id: mockProductId,
