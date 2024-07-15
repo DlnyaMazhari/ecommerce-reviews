@@ -2,7 +2,7 @@ import express, { Application, Request, Response, NextFunction } from "express";
 import bodyParser from "body-parser";
 import reviewRouter from "./api/ReviewController";
 import { PORT } from "./config";
-import { connect, close } from "./config/database";
+import { connect, close } from "./database/reviewDatabase";
 
 const app: Application = express();
 

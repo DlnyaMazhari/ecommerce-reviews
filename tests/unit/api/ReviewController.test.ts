@@ -2,7 +2,7 @@ import request from "supertest";
 import express, { Application } from "express";
 import bodyParser from "body-parser";
 import reviewRouter from "../../../src/api/ReviewController";
-import { connect, close } from "../../../src/config/database";
+import { connect, close } from "../../../src/database/reviewDatabase";
 import { ReviewModel } from "../../../src/entities/Review";
 
 const app: Application = express();
