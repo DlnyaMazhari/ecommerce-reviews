@@ -25,8 +25,7 @@ Installation
 `git clone <repository-url>`
 
 2. Install dependencies:
-   
-`npm install`
+   `npm install`
 
 3. Set up environment variables:
 
