@@ -15,9 +15,6 @@ This project implements a Review Service API using Node.js, Express, and MongoDB
 - TypeScript
 - MongoDB Memory Server (for in-memory database during development/testing)
 
-### Project Structure
-
-
 ### Getting Started
 #### Prerequisites
 - Node.js installed on your local machine
