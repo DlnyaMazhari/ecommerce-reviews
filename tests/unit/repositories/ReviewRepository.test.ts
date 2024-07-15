@@ -1,56 +1,82 @@
+import mongoose from "mongoose";
 import { ReviewRepository } from "../../../src/repositories/ReviewRepository";
-import { Review } from "../../../src/entities/Review";
+import { Review, ReviewModel } from "../../../src/entities/Review";
 
 describe("ReviewRepository", () => {
-  let reviewRepository: ReviewRepository;
-  function clearDatabase() {}
+  beforeEach(async () => {
+    await mongoose.connect("mongodb://localhost:27017/mydatabase", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    } as any);
 
-  beforeEach(() => {
-    reviewRepository = new ReviewRepository();
+    await ReviewModel.deleteMany({});
   });
 
-  afterEach(() => {
-    clearDatabase();
+  afterEach(async () => {
+    await mongoose.disconnect();
   });
 
-  it("should add a new review", async () => {
-    const mockReview: Review = {
-      product_id: "123",
-      content: "Great product!",
-      rating: 5,
-    };
+  describe("getReviewsByProductId", () => {
+    it("should return an empty array if no reviews exist for the product", async () => {
+      const reviewRepository = new ReviewRepository();
+      // Non-existent product ID
+      const reviews = await reviewRepository.getReviewsByProductId(999);
+      expect(reviews).toEqual([]);
+    });
 
-    const addedReview = await reviewRepository.addReview(mockReview);
-    expect(addedReview).toEqual(mockReview);
+    it("should return reviews for a given product ID", async () => {
+      const mockReviews = [
+        { product_id: 123, content: "Great product!", rating: 5 },
+        { product_id: 123, content: "Could be better.", rating: 3 },
+        { product_id: 456, content: "Not bad.", rating: 4 },
+      ];
+      await ReviewModel.insertMany(mockReviews);
 
-    const reviews = await reviewRepository.getReviewsByProductId(
-      mockReview.product_id
-    );
-    expect(reviews).toHaveLength(1);
-    expect(reviews[0]).toEqual(mockReview);
+      const reviewRepository = new ReviewRepository();
+      const reviews = await reviewRepository.getReviewsByProductId(123);
+      expect(reviews).toHaveLength(2);
+    });
   });
 
-  it("should get reviews by product ID", async () => {
-    const mockProductId = "123";
-    const mockReviews: Review[] = [
-      {
-        product_id: mockProductId,
-        content: "Great product!",
-        rating: 5,
-      },
-      {
-        product_id: mockProductId,
-        content: "Not so good product.",
+  describe("addReview", () => {
+    it("should add a new review to the database", async () => {
+      const reviewRepository = new ReviewRepository();
+      const mockNewReview = {
+        product_id: 789,
+        content: "Nice product!",
+        rating: 4,
+      } as Review;
+
+      const addedReview = await reviewRepository.addReview(mockNewReview);
+      expect(addedReview).toMatchObject(mockNewReview);
+    });
+
+    it("should throw an error if a user tries to review the same product again", async () => {
+      const mockReview = {
+        product_id: 999,
+        content: "Duplicate review",
         rating: 2,
-      },
-    ];
+        user_id: 1,
+      };
+      await ReviewModel.create(mockReview);
 
-    for (const review of mockReviews) {
-      await reviewRepository.addReview(review);
-    }
+      const reviewRepository = new ReviewRepository();
+      const mockDuplicateReview = {
+        product_id: 999,
+        content: "Another duplicate review",
+        rating: 4,
+        user_id: 1,
+      } as Review;
 
-    const reviews = await reviewRepository.getReviewsByProductId(mockProductId);
-    expect(reviews).toHaveLength(2);
-    expect(reviews).toEqual(expect.arrayContaining(mockReviews));
+      let error;
+      try {
+        await reviewRepository.addReview(mockDuplicateReview);
+      } catch (err: any) {
+        error = err;
+      }
+
+      expect(error).toBeDefined();
+      expect(error.message).toBe("User has already reviewed this product.");
+    });
   });
 });

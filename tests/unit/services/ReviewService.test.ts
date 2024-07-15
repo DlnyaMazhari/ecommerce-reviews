@@ -1,55 +1,70 @@
-import { Review } from "../../../src/entities/Review";
+import mongoose from "mongoose";
+import { MongoMemoryServer } from "mongodb-memory-server";
 import { ReviewService } from "../../../src/services/ReviewService";
-import { ReviewRepository } from "../../../src/repositories/ReviewRepository";
-
-jest.mock("../../../src/repositories/ReviewRepository");
+import { Review, ReviewModel } from "../../../src/entities/Review";
 
 describe("ReviewService", () => {
+  let mongoServer: MongoMemoryServer;
+  let mongoUri: string;
   let reviewService: ReviewService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    mongoUri = mongoServer.getUri();
+
+    await mongoose.connect(mongoUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    } as any);
     reviewService = new ReviewService();
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  afterEach(async () => {
+    await mongoose.disconnect();
+    await mongoServer.stop();
   });
 
-  it("should add a new review", async () => {
-    const mockReview: Review = {
-      product_id: 123,
-      content: "Great product!",
-      rating: 5,
-    };
+  describe("getReviewsByProductId", () => {
+    it("should return reviews for a valid productId", async () => {
+      const mockProductId = 1;
+      const mockReviews = [
+        { product_id: mockProductId, content: "Great product!", rating: 5 },
+        { product_id: mockProductId, content: "Do not recommend!", rating: 2 },
+      ];
 
-    (
-      ReviewRepository as jest.MockedClass<typeof ReviewRepository>
-    ).prototype.addReview.mockResolvedValue(mockReview);
+      await ReviewModel.create(mockReviews);
 
-    const addedReview = await reviewService.addReview(mockReview);
-    expect(addedReview).toEqual(mockReview);
+      const result = await reviewService.getReviewsByProductId(mockProductId);
+
+      expect(result).toHaveLength(mockReviews.length);
+      expect(result.map((review) => review.content)).toEqual(
+        expect.arrayContaining(mockReviews.map((review) => review.content))
+      );
+    });
+
+    it("should return an empty array for a productId with no reviews", async () => {
+      const mockProductId = 2;
+
+      const result = await reviewService.getReviewsByProductId(mockProductId);
+
+      expect(result).toHaveLength(0);
+    });
   });
 
-  it("should get reviews by product ID", async () => {
-    const mockProductId = 123;
-    const mockReviews: Review[] = [
-      {
-        product_id: mockProductId,
-        content: "Great product!",
+  describe("addReview", () => {
+    it("should add a new review successfully", async () => {
+      const mockNewReview = {
+        product_id: 1,
+        content: "Happy with the product!",
         rating: 5,
-      },
-      {
-        product_id: mockProductId,
-        content: "Not so good product.",
-        rating: 2,
-      },
-    ];
+      } as Review;
 
-    (
-      ReviewRepository as jest.MockedClass<typeof ReviewRepository>
-    ).prototype.getReviewsByProductId.mockResolvedValue(mockReviews);
+      const result = await reviewService.addReview(mockNewReview);
 
-    const reviews = await reviewService.getReviewsByProductId(mockProductId);
-    expect(reviews).toEqual(mockReviews);
+      expect(result.product_id).toEqual(mockNewReview.product_id);
+      expect(result.content).toEqual(mockNewReview.content);
+      expect(result.rating).toEqual(mockNewReview.rating);
+      expect(result).toHaveProperty("_id");
+    });
   });
 });
