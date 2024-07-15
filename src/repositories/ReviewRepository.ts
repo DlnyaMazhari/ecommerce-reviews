@@ -1,23 +1,24 @@
-import { Review } from "../entities/Review";
-
-const reviews: Review[] = [];
+import { Review, ReviewModel } from "../entities/Review";
 
 export class ReviewRepository {
-  async getReviewsByProductId(productId: string | number): Promise<Review[]> {
-    return reviews.filter((review) => review.product_id === productId);
+  async getReviewsByProductId(productId: number): Promise<Review[]> {
+    return ReviewModel.find({ product_id: productId });
   }
 
   async addReview(review: Review): Promise<Review> {
-    const existingReviewIndex = reviews.findIndex(
-      (r) => r.product_id === review.product_id && r.content === review.content
-    );
+    if (review.user_id) {
+      const existingReview = await ReviewModel.findOne({
+        product_id: review.product_id,
+        user_id: review.user_id,
+      });
 
-    if (existingReviewIndex !== -1) {
-      reviews[existingReviewIndex] = review;
-    } else {
-      reviews.push(review);
+      if (existingReview) {
+        throw new Error("User has already reviewed this product.");
+      }
     }
+    const newReview = new ReviewModel(review);
+    const savedReview = await newReview.save();
 
-    return review;
+    return savedReview;
   }
 }
