@@ -29,7 +29,7 @@ Installation
 
 3. Set up environment variables:
 
-- By default, the server will use `PORT=3100` and `DATABASE_URL=mongodb://localhost:27017/mydatabase`.
+- By default, the server will use `PORT=3100`
 
 ### Running the Server
 To start the server, run:
