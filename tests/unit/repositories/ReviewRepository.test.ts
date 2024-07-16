@@ -67,15 +67,9 @@ describe("ReviewRepository", () => {
         user_id: 1,
       } as Review;
 
-      let error;
-      try {
-        await reviewRepository.addReview(mockDuplicateReview);
-      } catch (err: any) {
-        error = err;
-      }
-
-      expect(error).toBeDefined();
-      expect(error.message).toBe("User has already reviewed this product.");
+      await expect(
+        reviewRepository.addReview(mockDuplicateReview)
+      ).rejects.toThrow("User has already reviewed this product.");
     });
   });
 });
