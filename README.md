@@ -75,4 +75,4 @@ To run the tests, use:
 Errors are logged to the console and a generic error message is sent to the client with a 500 status code.
 
 ### Database Connection
-The project uses MongoMemoryServer for an in-memory database during development/testing, which is set up in config/database.ts. For production, it connects to a MongoDB instance specified in the DATABASE_URL environment variable.
+The project uses MongoMemoryServer for an in-memory database during development/testing, which is set up in config/database.ts. 
