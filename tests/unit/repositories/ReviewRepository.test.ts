@@ -1,19 +1,18 @@
-import mongoose from "mongoose";
-import { ReviewRepository } from "../../../src/repositories/ReviewRepository";
+import { connect, close } from "../../../src/database/reviewDatabase";
 import { Review, ReviewModel } from "../../../src/entities/Review";
+import { ReviewRepository } from "../../../src/repositories/ReviewRepository";
 
 describe("ReviewRepository", () => {
-  beforeEach(async () => {
-    await mongoose.connect("mongodb://localhost:27017/mydatabase", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    } as any);
+  beforeAll(async () => {
+    await connect();
+  });
 
-    await ReviewModel.deleteMany({});
+  afterAll(async () => {
+    await close();
   });
 
   afterEach(async () => {
-    await mongoose.disconnect();
+    await ReviewModel.deleteMany({});
   });
 
   describe("getReviewsByProductId", () => {
